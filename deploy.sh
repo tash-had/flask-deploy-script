@@ -8,20 +8,20 @@ GIT_ACCESS_TOKEN=$4
 GIT_CLONE_URL="https://$GIT_USERNAME:$GIT_ACCESS_TOKEN@github.com/$GIT_USERNAME/$GIT_REPO_NAME.git"
 
 # project config
-PROJECT_NAME=$GIT_REPO_NAME
-PROJECT_TEST_FOLDER=$5
-PROJECT_APP_FILE=$6
+PROJECT_NAME=$5
+PROJECT_TEST_FOLDER=$6
+PROJECT_APP_FILE=$7
 
 # vm config
-VM_USERNAME=$7
+VM_USERNAME=$8
 VM_HOME_DIR="/home/$VM_USERNAME"
 VM_PROJECT_PATH="$VM_HOME_DIR/$PROJECT_NAME"
 VM_NGINX_PATH="/etc/nginx"
 VM_PY_PATH="/usr/bin/python3.6"
 
 # deployment config
-DEPLOYMENT_ENV=$8
-DEPLOYMENT_PORT=$9
+DEPLOYMENT_ENV=$9
+DEPLOYMENT_PORT=${10}
 
 function predeployment_msg() {
     printf "***************************************************\n\t\tIMPORTANT \n***************************************************\n"
@@ -130,6 +130,8 @@ EOL
 # Add a launch script
 function create_launch_script () {
     printf "***************************************************\n\t\tCreating a Launch script \n***************************************************\n"
+    
+    gunicorn_pid=`ps ax | grep gunicorn | grep $DEPLOYMENT_PORT | awk '{split($0,a," "); print a[1]}' | head -n 1`
 
     sudo cat > $VM_PROJECT_PATH/launch.sh <<EOF
     #!/bin/bash
@@ -137,8 +139,7 @@ function create_launch_script () {
     cd $VM_PROJECT_PATH
     source $VM_PROJECT_PATH/.env
     source $VM_HOME_DIR/venv/bin/activate
-    sudo pkill gunicorn
-    sudo pkill /home/tash-had/venv/bin/gunicorn
+    sudo kill ${gunicorn_pid}
     sudo $VM_HOME_DIR/venv/bin/gunicorn app:APP -b 0.0.0.0:$DEPLOYMENT_PORT --daemon
     printf "\n\n***************************************************\n\t\tDeployment Succeeded.\n***************************************************\n\n"
 EOF
@@ -181,9 +182,9 @@ function print_status() {
 ########################      RUNTIME       ##########################
 ######################################################################
 
-if [ $# -lt 9 ]; 
+if [ $# -lt 10 ]; 
    then 
-       printf "usage: sudo bash deploy git_user git_repo git_branch git_access_token test_folder app_file vm_user env port\n"
+       printf "usage: sudo bash deploy git_user git_repo git_branch git_access_token project_name test_folder app_file vm_user env port\n"
        print_status "Checking arguments" 1
 fi
 
