@@ -142,7 +142,7 @@ function create_launch_script () {
     source $VM_PROJECT_PATH/.env
     source $VM_HOME_DIR/venv/bin/activate
     sudo kill ${gunicorn_pid}
-    sudo $VM_HOME_DIR/venv/bin/gunicorn app:APP -b 0.0.0.0:$DEPLOYMENT_PORT --daemon
+    sudo $VM_HOME_DIR/venv/bin/gunicorn -b 0.0.0.0:$DEPLOYMENT_PORT --env APP_CONFIG=${DEPLOYMENT_ENV} --daemon app:APP
     printf "\n\n***************************************************\n\t\tDeployment Succeeded.\n***************************************************\n\n"
 EOF
     sudo chmod 744 $VM_PROJECT_PATH/launch.sh
