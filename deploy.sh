@@ -23,6 +23,8 @@ VM_PY_PATH="/usr/bin/python3.6"
 DEPLOYMENT_ENV=$9
 DEPLOYMENT_PORT=${10}
 
+EXPECTED_ARGS=10
+
 function predeployment_msg() {
     printf "***************************************************\n\t\tIMPORTANT \n***************************************************\n"
     printf "You must go to your VM Dashboard in Azure, click Networking (under settings), and add an inbound port rule with\n"
@@ -182,8 +184,9 @@ function print_status() {
 ########################      RUNTIME       ##########################
 ######################################################################
 
-if [ $# -lt 10 ]; 
-   then 
+if [ $# -lt $EXPECTED_ARGS ]; 
+   then
+       printf "Expected %d args, got %d" $EXPECTED_ARGS $#
        printf "usage: sudo bash deploy git_user git_repo git_branch git_access_token project_name test_folder app_file vm_user env port\n"
        print_status "Checking arguments" 1
 fi
