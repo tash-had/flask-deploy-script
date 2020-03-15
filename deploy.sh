@@ -186,7 +186,8 @@ function print_status() {
 
 if [ $# -lt $EXPECTED_ARGS ]; 
    then
-       printf "Expected %d args, got %d" $EXPECTED_ARGS $#
+       printf "Expected %d args, got %d\n" $EXPECTED_ARGS $#
+       printf "Received %s %s %s %s %s %s %s %s %s %s\n" $1 $2 $3 $4 $5 $6 $7 $8 $9 ${10}
        printf "usage: sudo bash deploy git_user git_repo git_branch git_access_token project_name test_folder app_file vm_user env port\n"
        print_status "Checking arguments" 1
 fi
