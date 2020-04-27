@@ -1,30 +1,30 @@
 #! /bin/bash
 
+# Usage instructions at https://github.com/tash-had/azure-flask-deploy-script
+
 # git config
-GIT_USERNAME=$1
-GIT_REPO_NAME=$2
-GIT_BRANCH=$3
-GIT_ACCESS_TOKEN=$4 # set to : if public
-GIT_CLONE_URL="https://$GIT_USERNAME:$GIT_ACCESS_TOKEN@github.com/$GIT_USERNAME/$GIT_REPO_NAME.git"
+GIT_USERNAME=''
+GIT_REPO_NAME=''
+GIT_BRANCH='master'
+GIT_ACCESS_TOKEN=':'
+GIT_CLONE_URL=''
 
 # project config
-PROJECT_NAME=$5
-PROJECT_TEST_FOLDER=$6
-PROJECT_APP_FILE=$7
-PROJECT_PARENT_FOLDER=$8
+PROJECT_LABEL=''
+PROJECT_TEST_FOLDER='tests'
+PROJECT_APP_FILE='app.py'
+PROJECT_PARENT_FOLDER='.'
 
 # vm config
-VM_USERNAME=$9
-VM_HOME_DIR="/home/$VM_USERNAME"
-VM_PROJECT_PATH="$VM_HOME_DIR/$PROJECT_NAME"
-VM_NGINX_PATH="/etc/nginx"
-VM_PY_PATH="/usr/bin/python3.6"
+VM_USERNAME=''
+VM_HOME_DIR=''
+VM_PROJECT_PATH=''
+VM_NGINX_PATH='/etc/nginx'
+VM_PY_PATH='/usr/bin/python3.6'
 
 # deployment config
-DEPLOYMENT_ENV=${10}
-DEPLOYMENT_PORT=${11}
-
-EXPECTED_ARGS=11
+DEPLOYMENT_ENV='development'
+DEPLOYMENT_PORT='5000'
 
 function setup_host() {
     printf "***************************************************\n\t\tSetup Host \n***************************************************\n"
@@ -65,9 +65,9 @@ function clone_app_repository() {
     cd $VM_HOME_DIR
 
     if [ $PROJECT_PARENT_FOLDER == "." ]; then
-        git clone -b $GIT_BRANCH $GIT_CLONE_URL $PROJECT_NAME && cd $PROJECT_NAME
+        git clone -b $GIT_BRANCH $GIT_CLONE_URL $PROJECT_LABEL && cd $PROJECT_LABEL
     else
-        git clone -b $GIT_BRANCH $GIT_CLONE_URL $PROJECT_NAME && cd $PROJECT_NAME && git filter-branch --subdirectory-filter $PROJECT_PARENT_FOLDER
+        git clone -b $GIT_BRANCH $GIT_CLONE_URL $PROJECT_LABEL && cd $PROJECT_LABEL && git filter-branch --subdirectory-filter $PROJECT_PARENT_FOLDER
     fi
 }
 
@@ -101,14 +101,14 @@ function setup_nginx() {
     echo ======= Removing default config =======
     sudo rm -rf $VM_NGINX_PATH/sites-available/default
     sudo rm -rf $VM_NGINX_PATH/sites-enabled/default
-    sudo rm -rf $VM_NGINX_PATH/sites-enabled/$PROJECT_NAME
-    sudo touch $VM_NGINX_PATH/sites-available/$PROJECT_NAME
+    sudo rm -rf $VM_NGINX_PATH/sites-enabled/$PROJECT_LABEL
+    sudo touch $VM_NGINX_PATH/sites-available/$PROJECT_LABEL
 
     echo ======= Create a symbolic link of the file to sites-enabled =======
-    sudo ln -s $VM_NGINX_PATH/sites-available/$PROJECT_NAME $VM_NGINX_PATH/sites-enabled/$PROJECT_NAME
+    sudo ln -s $VM_NGINX_PATH/sites-available/$PROJECT_LABEL $VM_NGINX_PATH/sites-enabled/$PROJECT_LABEL
 
     echo ======= Replace config file =======
-    sudo cat >$VM_NGINX_PATH/sites-enabled/$PROJECT_NAME <<EOL
+    sudo cat >$VM_NGINX_PATH/sites-enabled/$PROJECT_LABEL <<EOL
    server {
             location / {
                 proxy_pass http://localhost:${DEPLOYMENT_PORT};
@@ -170,18 +170,45 @@ function print_status() {
     fi
 }
 
+function print_usage() {
+  printf "usage: deploy [-b branch] [-c token] [-l label] [-t test_folder] [-r root_file] [-s subdirectory] [-e environment] [-p port] git_user repo_name vm_user"
+}
+
+function set_dependent_config() {
+    # set values of variables that depend on the arguments given to the script
+    GIT_USERNAME=$1
+    GIT_REPO_NAME=$2
+    GIT_CLONE_URL="https://$GIT_USERNAME:$GIT_ACCESS_TOKEN@github.com/$GIT_USERNAME/$GIT_REPO_NAME.git"
+
+    PROJECT_LABEL="$GIT_REPO_NAME-$DEPLOYMENT_ENV"
+
+    VM_USERNAME=$3
+    VM_HOME_DIR="/home/$VM_USERNAME"
+    VM_PROJECT_PATH="$VM_HOME_DIR/$PROJECT_LABEL"
+}
 
 ######################################################################
 ########################      RUNTIME       ##########################
 ######################################################################
 
-if [ $# -lt $EXPECTED_ARGS ]; 
-   then
-       printf "Expected %d args, got %d\n" $EXPECTED_ARGS $#
-       printf "Received %s %s %s %s %s %s %s %s %s %s\n" $1 $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11}
-       printf "usage: sudo bash deploy git_user git_repo git_branch git_access_token project_name test_folder app_file parent_folder vm_user env port\n"
-       print_status "Checking arguments" 1
-fi
+# Process flags
+while getopts 'b:c:l:t:r:s:e:p:' flag; do
+  case "${flag}" in
+    b) GIT_BRANCH="${OPTARG}" ;;
+    c) GIT_ACCESS_TOKEN="${OPTARG}" ;;
+    l) PROJECT_LABEL="${OPTARG}" ;;
+    t) PROJECT_TEST_FOLDER="${OPTARG}" ;;
+    r) PROJECT_APP_FILE="${OPTARG}" ;;
+    s) PROJECT_PARENT_FOLDER="${OPTARG}" ;;
+    e) DEPLOYMENT_ENV="${OPTARG}" ;;
+    p) DEPLOYMENT_PORT="${OPTARG}" ;;
+    *) print_usage
+       exit 1 ;;
+  esac
+done
+shift $(($OPTIND - 1))
+
+set_dependent_config
 
 setup_host
 print_status "Update packages and install python" $?

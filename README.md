@@ -2,27 +2,31 @@
 This script will pull your server code from GitHub and deploy it on an Azure VM.
 
 ## Usage
-`usage: sudo bash deploy.sh git_user git_repo git_branch git_access_token project_name test_folder app_file parent_folder vm_user env port`
+`usage: deploy usage: deploy [-b branch] [-c token] [-l label] [-t test_folder] [-r root_file] [-s subdirectory] [-e environment] [-p port] git_user repo_name vm_user`
 
-### Arguments
-`git_user` your GitHub username or organization name
+Example: `sudo bash deploy tash-had flask_demo demo_vm`
 
-`git_repo` the repo to deploy (should be owned by `git_user`)
+### Required Arguments
+`git_user` a GitHub user or organization name
 
-`git_branch` is the branch you wish to deploy
+`repo_name` the repo to deploy. should be owned by `git_user`. **If the repo is private, the `-c` argument must be provided**. 
 
-`git_access_token` an access token with Read access to `git_repo`. **This is only required if your repo is private. If it's a public repo, set this to ":"**
+`vm_user` the administrator username given to the VM
 
-`project_name` A name for this deployment (ie. my-app-dev, my-app-prod)
+### Optional Arguments
 
-`test_folder` The name of the test folder
+`-b` **branch:** the branch you wish to deploy. Defaults to master. 
 
-`app_file` The name of the Flask root file (ie. app.py)
+`-c` **credential:** an access token with Read access to `git_repo`. This is only required if your repo is private.
 
-`parent_folder` The folder in your repo that has the server code. **If your server code is in the root of the repo, set this to "."**
+`-l` **label:** a label for this deployment. Defaults to "`repo_name`-`env`". This flag is useful if you want to have multiple instances of the same build environment on a single server (otherwise the default value would overwrite previous deployment). 
 
-`vm_user` The username of the VM administrator
+`-t` **test folder:** the name of the test folder. Defaults to "tests".
 
-`env` the deployment environmnt (ie. 'development'). This value is used to set the `APP_CONFIG` environment variable.
+`-r` **root file:** the name of the Flask root file. Defaults to "app.py". 
 
-`port` the port to deploy on (ie. 5000)
+`-s` **subdirectory:** the folder in your repo that has the server code. 
+
+`-e` **environment:** the deployment environmnt (ie. 'development'). This value is used to set the `APP_CONFIG` environment variable.
+
+`-p` **port:** the port to deploy on. defaults to 5000.
