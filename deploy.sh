@@ -211,7 +211,7 @@ while getopts 'b:c:l:t:r:s:e:p:' flag; do
 done
 shift $(($OPTIND - 1))
 
-set_dependent_config
+set_dependent_config $*
 
 setup_host
 print_status "Update packages and install python" $?
