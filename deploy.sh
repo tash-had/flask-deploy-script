@@ -75,8 +75,10 @@ function setup_app() {
     printf "***************************************************\n    Installing App dependencies \n***************************************************\n"
     # Install required packages
     echo ======= Installing required packages ========
-    pip3 install -r $VM_PROJECT_PATH/requirements.txt
-
+    requirements_file="$VM_PROJECT_PATH/requirements.txt"
+    if [ -f "$requirements_file" ]; then
+        pip3 install -r $requirements_file
+    fi
 }
 
 # Create and Export required environment variable
