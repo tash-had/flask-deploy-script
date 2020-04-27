@@ -50,7 +50,7 @@ function init_venv() {
 
     # Create virtual environment and activate it
     echo ======== Creating and activating virtual env =======
-    virtualenv -p $VM_PY_PATH venv
+    virtualenv -p $VM_PY_PATH $VM_HOME_DIR/venv
     source $VM_HOME_DIR/venv/bin/activate
 }
 
