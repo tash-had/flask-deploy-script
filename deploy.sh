@@ -187,9 +187,7 @@ function set_dependent_config() {
     VM_PROJECT_PATH="$VM_HOME_DIR/$PROJECT_LABEL"
 }
 
-######################################################################
-########################      RUNTIME       ##########################
-######################################################################
+# Runtime
 
 # Process flags
 while getopts 'b:c:l:t:r:s:e:p:' flag; do
