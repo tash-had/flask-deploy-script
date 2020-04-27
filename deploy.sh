@@ -78,6 +78,8 @@ function setup_app() {
     requirements_file="$VM_PROJECT_PATH/requirements.txt"
     if [ -f "$requirements_file" ]; then
         pip3 install -r $requirements_file
+    else
+        echo "\nrequirements.txt not found.\n"
     fi
 }
 
