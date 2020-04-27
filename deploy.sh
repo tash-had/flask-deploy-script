@@ -152,9 +152,12 @@ function launch_app() {
 
 # Run tests
 function run_tests() {
-    pip install nose
-    cd $VM_PROJECT_PATH/$PROJECT_TEST_FOLDER
-    nosetests test*
+    test_folder="$VM_PROJECT_PATH/$PROJECT_TEST_FOLDER"
+    if [[ -d $test_folder ]]; then
+        pip install nose
+        cd $test_folder
+        nosetests test*
+    fi   
 }
 
 function print_status() {
