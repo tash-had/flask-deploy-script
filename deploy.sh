@@ -4,36 +4,30 @@
 GIT_USERNAME=$1
 GIT_REPO_NAME=$2
 GIT_BRANCH=$3
-GIT_ACCESS_TOKEN=$4
+GIT_ACCESS_TOKEN=$4 # set to : if public
 GIT_CLONE_URL="https://$GIT_USERNAME:$GIT_ACCESS_TOKEN@github.com/$GIT_USERNAME/$GIT_REPO_NAME.git"
 
 # project config
 PROJECT_NAME=$5
 PROJECT_TEST_FOLDER=$6
 PROJECT_APP_FILE=$7
+PROJECT_PARENT_FOLDER=$8
 
 # vm config
-VM_USERNAME=$8
+VM_USERNAME=$9
 VM_HOME_DIR="/home/$VM_USERNAME"
 VM_PROJECT_PATH="$VM_HOME_DIR/$PROJECT_NAME"
 VM_NGINX_PATH="/etc/nginx"
 VM_PY_PATH="/usr/bin/python3.6"
 
 # deployment config
-DEPLOYMENT_ENV=$9
-DEPLOYMENT_PORT=${10}
+DEPLOYMENT_ENV=${10}
+DEPLOYMENT_PORT=${11}
 
-EXPECTED_ARGS=10
+EXPECTED_ARGS=11
 
-function predeployment_msg() {
-    printf "***************************************************\n\t\tIMPORTANT \n***************************************************\n"
-    printf "You must go to your VM Dashboard in Azure, click Networking (under settings), and add an inbound port rule with\n"
-    printf "Source=Any|Source port ranges=*|Destination=Any|Destination port ranges=8000|Protocol=Any|Action=Any\n"
-    printf "***************************************************\n\t\tIMPORTANT \n***************************************************\n"
-}
-
-function initialize_worker() {
-    printf "***************************************************\n\t\tSetting up host \n***************************************************\n"
+function setup_host() {
+    printf "***************************************************\n\t\tSetup Host \n***************************************************\n"
     # Update packages
     echo ======= Updating packages ========
     sudo apt-get update
@@ -48,7 +42,7 @@ function initialize_worker() {
     sudo apt-get install -y python3-pip
 }
 
-function setup_python_venv() {
+function init_venv() {
     printf "***************************************************\n\t\tSetting up Venv \n***************************************************\n"
     # Install virtualenv
     echo ======= Installing virtualenv =======
@@ -61,21 +55,24 @@ function setup_python_venv() {
 }
 
 function clone_app_repository() {
-    printf "***************************************************\n\t\tFetching App \n***************************************************\n"
+    printf "***************************************************\n\t\tFetching Code \n***************************************************\n"
     # Clone and access project directory
     echo ======== Cloning and accessing project directory ========
     if [[ -d $VM_PROJECT_PATH ]]; then
         sudo rm -rf $VM_PROJECT_PATH
-        cd $VM_HOME_DIR
-        git clone -b $GIT_BRANCH $GIT_CLONE_URL $PROJECT_NAME && cd $PROJECT_NAME && git filter-branch --subdirectory-filter server
+    fi
+    
+    cd $VM_HOME_DIR
+
+    if [ $PROJECT_PARENT_FOLDER == "." ]; then
+        git clone -b $GIT_BRANCH $GIT_CLONE_URL $PROJECT_NAME && cd $PROJECT_NAME
     else
-        cd $VM_HOME_DIR
-        git clone -b $GIT_BRANCH $GIT_CLONE_URL $PROJECT_NAME && cd $PROJECT_NAME && git filter-branch --subdirectory-filter server
+        git clone -b $GIT_BRANCH $GIT_CLONE_URL $PROJECT_NAME && cd $PROJECT_NAME && git filter-branch --subdirectory-filter $PROJECT_PARENT_FOLDER
     fi
 }
 
 function setup_app() {
-    printf "***************************************************\n    Installing App dependencies and Env Variables \n***************************************************\n"
+    printf "***************************************************\n    Installing App dependencies \n***************************************************\n"
     # Install required packages
     echo ======= Installing required packages ========
     pip3 install -r $VM_PROJECT_PATH/requirements.txt
@@ -86,9 +83,7 @@ function setup_app() {
 function setup_env() {
     echo ======= Exporting the necessary environment variables ========
     sudo cat > $VM_PROJECT_PATH/.env << EOF
-    export DATABASE_URL="postgres://dehqoaqa:u5pTkjidEKG5iyseS87FGcVBqFo-n8XM@drona.db.elephantsql.com:5432/"
     export APP_CONFIG=${DEPLOYMENT_ENV}
-    export SECRET_KEY="mYd3rTyL!tTl#sEcR3t"
     export FLASK_APP=${PROJECT_APP_FILE}
 EOF
     echo ======= Exporting the necessary environment variables ========
@@ -152,10 +147,6 @@ EOF
 
 # Serve the web app through gunicorn
 function launch_app() {
-    printf "***************************************************\n\t\tIMPORTANT \n***************************************************\n"
-    printf "Issues? Ensure that you've set all variables in the script and you have set the correct\nInbound Port Rule in Azure (See pre-deployment message for more)\n"
-    printf "***************************************************\n\t\tLaunching App \n***************************************************\n"
-
     sudo bash $VM_PROJECT_PATH/launch.sh
 }
 
@@ -187,18 +178,15 @@ function print_status() {
 if [ $# -lt $EXPECTED_ARGS ]; 
    then
        printf "Expected %d args, got %d\n" $EXPECTED_ARGS $#
-       printf "Received %s %s %s %s %s %s %s %s %s %s\n" $1 $2 $3 $4 $5 $6 $7 $8 $9 ${10}
-       printf "usage: sudo bash deploy git_user git_repo git_branch git_access_token project_name test_folder app_file vm_user env port\n"
+       printf "Received %s %s %s %s %s %s %s %s %s %s\n" $1 $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11}
+       printf "usage: sudo bash deploy git_user git_repo git_branch git_access_token project_name test_folder app_file parent_folder vm_user env port\n"
        print_status "Checking arguments" 1
 fi
 
-predeployment_msg
-print_status "Pre-Deployment" $?
-
-initialize_worker
+setup_host
 print_status "Update packages and install python" $?
 
-setup_python_venv
+init_venv
 print_status "Install and create a Python 3.6 virtual environment" $?
 
 clone_app_repository
