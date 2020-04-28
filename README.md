@@ -1,7 +1,7 @@
 # azure-flask-deploy-script
 This script will pull your server code from GitHub and deploy it on an Azure VM.
 
-## [Full Article](https://medium.com/@tashadsaqif/deploying-a-flask-rest-api-to-azure-9c129b2bafee)
+### [Full Article](https://medium.com/@tashadsaqif/deploying-a-flask-rest-api-to-azure-9c129b2bafee)
 
 ## Usage
 `usage: deploy usage: deploy [-b branch] [-c token] [-l label] [-t test_folder] [-m module_name] [-v variable_name] [-s subdirectory] [-e environment] [-p port] git_user repo_name vm_user`
