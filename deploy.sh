@@ -137,8 +137,8 @@ function create_launch_script () {
     
     gunicorn_pid=`ps ax | grep gunicorn | grep $DEPLOYMENT_PORT | awk '{split($0,a," "); print a[1]}' | head -n 1`
     
-    module_name = ${PROJECT_APP_MODULE_FILE%.*} 
-    module_name = ${module_name##*/}
+    module_name=${PROJECT_APP_MODULE_FILE%.*} 
+    module_name=${module_name##*/}
 
     sudo cat > $VM_PROJECT_PATH/launch.sh <<EOF
     #!/bin/bash
@@ -146,11 +146,11 @@ function create_launch_script () {
     cd $VM_PROJECT_PATH
     source $VM_PROJECT_PATH/.env
     source $VM_HOME_DIR/venv/bin/activate
-    if [ ! -z $gunicorn_pid ]; then
+    if [ ! -z ${gunicorn_pid} ]; then
         printf "\nKilling previous instances...\n"
         sudo kill $gunicorn_pid
     fi
-    sudo $VM_HOME_DIR/venv/bin/gunicorn -b 0.0.0.0:$DEPLOYMENT_PORT --env APP_CONFIG=${DEPLOYMENT_ENV} --daemon $module_name:$PROJECT_APP_VARIABLE
+    sudo $VM_HOME_DIR/venv/bin/gunicorn -b 0.0.0.0:$DEPLOYMENT_PORT --env APP_CONFIG=${DEPLOYMENT_ENV} --daemon ${module_name}:$PROJECT_APP_VARIABLE
     printf "\n\n***************************************************\n\t\tDeployment Succeeded.\n***************************************************\n\n"
 EOF
     sudo chmod 744 $VM_PROJECT_PATH/launch.sh
