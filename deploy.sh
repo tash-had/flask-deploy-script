@@ -126,12 +126,12 @@ function setup_nginx() {
 EOL
 
     echo "STARTIN NOW"
-    service_name="$PROJECT_NAME.service"
+    service_name="$PROJECT_LABEL.service"
     echo $service_name
     echo "there you are"
     sudo bash -c 'cat > /etc/systemd/system/${service_name} <<EOF
     [Unit]
-    Description=${PROJECT_NAME} startup service
+    Description=${PROJECT_LABEL} startup service
     After=network.target
     
     [Service]
@@ -144,9 +144,9 @@ EOF'
 
     sudo chmod 664 /etc/systemd/system/$service_name
     sudo systemctl daemon-reload
-    sudo systemctl enable $service_name
-    sudo systemctl start $service_name
-    sudo service ${PROJECT_NAME} status
+    sudo systemctl enable $PROJECT_LABEL
+    sudo systemctl start $PROJECT_LABEL
+    sudo service $PROJECT_LABEL status
 
     # sudo mkdir /etc/systemd/system/nginx.service.d
     # sudo touch override.conf
