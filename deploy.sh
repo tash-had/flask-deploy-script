@@ -3,28 +3,28 @@
 # Usage instructions at https://github.com/tash-had/azure-flask-deploy-script
 
 # git config
-GIT_USERNAME=''
-GIT_REPO_NAME=''
-GIT_BRANCH='master'
-GIT_ACCESS_TOKEN=':'
-GIT_CLONE_URL=''
+GIT_USERNAME=""
+GIT_REPO_NAME=""
+GIT_BRANCH="master"
+GIT_ACCESS_TOKEN=":"
+GIT_CLONE_URL=""
 
 # project config
-PROJECT_LABEL=''
-PROJECT_TEST_FOLDER='tests'
-PROJECT_APP_FILE='app.py'
-PROJECT_PARENT_FOLDER='.'
+PROJECT_LABEL=""
+PROJECT_TEST_FOLDER="tests"
+PROJECT_APP_FILE="app.py"
+PROJECT_PARENT_FOLDER="."
 
 # vm config
-VM_USERNAME=''
-VM_HOME_DIR=''
-VM_PROJECT_PATH=''
+VM_USERNAME=""
+VM_HOME_DIR=""
+VM_PROJECT_PATH=""
 VM_NGINX_PATH='/etc/nginx'
-VM_PY_PATH='/usr/bin/python3.6'
+VM_PY_PATH="/usr/bin/python3.6"
 
 # deployment config
-DEPLOYMENT_ENV='development'
-DEPLOYMENT_PORT='5000'
+DEPLOYMENT_ENV="development"
+DEPLOYMENT_PORT="5000"
 
 function setup_host() {
     printf "***************************************************\n\t\tSetup Host \n***************************************************\n"
