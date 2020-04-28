@@ -2,7 +2,7 @@
 This script will pull your server code from GitHub and deploy it on an Azure VM.
 
 ## Usage
-`usage: deploy usage: deploy [-b branch] [-c token] [-l label] [-t test_folder] [-r root_file] [-s subdirectory] [-e environment] [-p port] git_user repo_name vm_user`
+`usage: deploy usage: deploy [-b branch] [-c token] [-l label] [-t test_folder] [-m module_name] [-v variable_name] [-s subdirectory] [-e environment] [-p port] git_user repo_name vm_user`
 
 Example: `sudo bash deploy tash-had flask_demo demo_vm`
 
@@ -23,7 +23,9 @@ Example: `sudo bash deploy tash-had flask_demo demo_vm`
 
 `-t` **test folder:** the name of the test folder. Defaults to "tests".
 
-`-r` **root file:** the name of the Flask root file. Defaults to "app.py". 
+`-m` **module name:** the name of the root Flask module file. Defaults to "app.py". 
+
+`-v` **variable name:** the WSGI callable variable that should be in your root flask module (see `-m`). For example, if in your root file (`app.py`), you have `a = Flask(__name__)`, then your variable name is `a`. Defaults to `app`.  
 
 `-s` **subdirectory:** the folder in your repo that has the server code. 
 

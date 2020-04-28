@@ -12,7 +12,8 @@ GIT_CLONE_URL=""
 # project config
 PROJECT_LABEL=""
 PROJECT_TEST_FOLDER="tests"
-PROJECT_APP_FILE="app.py"
+PROJECT_APP_MODULE_FILE="app.py"
+PROJECT_APP_VARIABLE="app"
 PROJECT_PARENT_FOLDER="."
 
 # vm config
@@ -91,7 +92,7 @@ function setup_env() {
     echo ======= Exporting the necessary environment variables ========
     sudo cat > $VM_PROJECT_PATH/.env << EOF
     export APP_CONFIG=${DEPLOYMENT_ENV}
-    export FLASK_APP=${PROJECT_APP_FILE}
+    export FLASK_APP=${PROJECT_APP_MODULE_FILE}
 EOF
     echo ======= Exporting the necessary environment variables ========
     source $VM_PROJECT_PATH/.env
@@ -124,7 +125,6 @@ function setup_nginx() {
             }
     }
 EOL
-    sudo systemctl daemon-reload
     # Ensure nginx server is running
     echo ====== Checking nginx server status ========
     sudo /etc/init.d/nginx restart
@@ -136,6 +136,9 @@ function create_launch_script () {
     printf "***************************************************\n\t\tCreating a Launch script \n***************************************************\n"
     
     gunicorn_pid=`ps ax | grep gunicorn | grep $DEPLOYMENT_PORT | awk '{split($0,a," "); print a[1]}' | head -n 1`
+    
+    module_name = ${PROJECT_APP_MODULE_FILE%.*} 
+    module_name = ${module_name##*/}
 
     sudo cat > $VM_PROJECT_PATH/launch.sh <<EOF
     #!/bin/bash
@@ -143,11 +146,11 @@ function create_launch_script () {
     cd $VM_PROJECT_PATH
     source $VM_PROJECT_PATH/.env
     source $VM_HOME_DIR/venv/bin/activate
-    if [ ! -z ${gunicorn_pid} ]; then
+    if [ ! -z $gunicorn_pid ]; then
         printf "\nKilling previous instances...\n"
-        sudo kill ${gunicorn_pid}
+        sudo kill $gunicorn_pid
     fi
-    sudo $VM_HOME_DIR/venv/bin/gunicorn -b 0.0.0.0:$DEPLOYMENT_PORT --env APP_CONFIG=${DEPLOYMENT_ENV} --daemon app:APP
+    sudo $VM_HOME_DIR/venv/bin/gunicorn -b 0.0.0.0:$DEPLOYMENT_PORT --env APP_CONFIG=${DEPLOYMENT_ENV} --daemon $module_name:$PROJECT_APP_VARIABLE
     printf "\n\n***************************************************\n\t\tDeployment Succeeded.\n***************************************************\n\n"
 EOF
     sudo chmod 744 $VM_PROJECT_PATH/launch.sh
@@ -184,7 +187,7 @@ function print_status() {
 }
 
 function print_usage() {
-  printf "usage: deploy [-b branch] [-c token] [-l label] [-t test_folder] [-r root_file] [-s subdirectory] [-e environment] [-p port] git_user repo_name vm_user"
+  printf "usage: deploy usage: deploy [-b branch] [-c token] [-l label] [-t test_folder] [-m module_name] [-v variable_name] [-s subdirectory] [-e environment] [-p port] git_user repo_name vm_user"
 }
 
 function set_dependent_config() {
@@ -203,13 +206,14 @@ function set_dependent_config() {
 # Runtime
 
 # Process flags
-while getopts 'b:c:l:t:r:s:e:p:' flag; do
+while getopts 'b:c:l:t:r:m:s:e:p:' flag; do
   case "${flag}" in
     b) GIT_BRANCH="${OPTARG}" ;;
     c) GIT_ACCESS_TOKEN="${OPTARG}" ;;
     l) PROJECT_LABEL="${OPTARG}" ;;
     t) PROJECT_TEST_FOLDER="${OPTARG}" ;;
-    r) PROJECT_APP_FILE="${OPTARG}" ;;
+    m) PROJECT_APP_MODULE_FILE="${OPTARG}" ;;
+    v) PROJECT_APP_VARIABLE="${OPTARG}" ;;
     s) PROJECT_PARENT_FOLDER="${OPTARG}" ;;
     e) DEPLOYMENT_ENV="${OPTARG}" ;;
     p) DEPLOYMENT_PORT="${OPTARG}" ;;
