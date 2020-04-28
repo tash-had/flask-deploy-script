@@ -206,7 +206,7 @@ function set_dependent_config() {
 # Runtime
 
 # Process flags
-while getopts 'b:c:l:t:r:m:s:e:p:' flag; do
+while getopts 'b:c:l:t:r:m:v:s:e:p:' flag; do
   case "${flag}" in
     b) GIT_BRANCH="${OPTARG}" ;;
     c) GIT_ACCESS_TOKEN="${OPTARG}" ;;
