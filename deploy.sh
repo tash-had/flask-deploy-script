@@ -126,7 +126,9 @@ function setup_nginx() {
 EOL
 
     echo "STARTIN NOW"
-    sudo bash -c 'cat > /etc/systemd/system/${PROJECT_NAME}.service <<EOF
+    service_name="${PROJECT_NAME}.service"
+
+    sudo bash -c 'cat > /etc/systemd/system/${service_name} <<EOF
     [Unit]
     Description=${PROJECT_NAME} startup service
     After=network.target
@@ -138,10 +140,11 @@ EOL
     [Install]
     WantedBy=multi-user.target
 EOF'
-    sudo chmod 664 /etc/systemd/system/${PROJECT_NAME}.service
+
+    sudo chmod 664 /etc/systemd/system/$service_name
     sudo systemctl daemon-reload
-    sudo systemctl enable ${PROJECT_NAME}.service
-    sudo systemctl start ${PROJECT_NAME}.service
+    sudo systemctl enable $service_name
+    sudo systemctl start $service_name
     sudo service ${PROJECT_NAME} status
 
     # sudo mkdir /etc/systemd/system/nginx.service.d
