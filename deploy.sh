@@ -75,6 +75,9 @@ function setup_app() {
     printf "***************************************************\n    Installing App dependencies \n***************************************************\n"
     # Install required packages
     echo ======= Installing required packages ========
+    pip3 install Flask
+    pip3 install gunicorn
+
     requirements_file="$VM_PROJECT_PATH/requirements.txt"
     if [ -f "$requirements_file" ]; then
         pip3 install -r $requirements_file
