@@ -19,7 +19,7 @@ Example: `sudo bash deploy tash-had flask_demo demo_vm`
 
 `-b` **branch:** the branch you wish to deploy. Defaults to master. 
 
-`-c` **credential:** an access token with Read access to `git_repo`. This is only required if your repo is private.
+`-c` **credential:** an access token with Read access to `repo_name`. This is only required if your repo is private.
 
 `-l` **label:** a label for this deployment. Defaults to "`repo_name`-`env`". This flag is useful if you want to have multiple instances of the same build environment on a single server (otherwise the default value would overwrite previous deployment). 
 
