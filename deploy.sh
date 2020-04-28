@@ -219,7 +219,15 @@ while getopts 'b:c:l:t:r:s:e:p:' flag; do
 done
 shift $(($OPTIND - 1))
 
-set_dependent_config $*
+GIT_USERNAME=$1
+GIT_REPO_NAME=$2
+GIT_CLONE_URL="https://$GIT_USERNAME:$GIT_ACCESS_TOKEN@github.com/$GIT_USERNAME/$GIT_REPO_NAME.git"
+
+PROJECT_LABEL="$GIT_REPO_NAME-$DEPLOYMENT_ENV"
+
+VM_USERNAME=$3
+VM_HOME_DIR="/home/$VM_USERNAME"
+VM_PROJECT_PATH="$VM_HOME_DIR/$PROJECT_LABEL"
 
 setup_host
 print_status "Update packages and install python" $?
