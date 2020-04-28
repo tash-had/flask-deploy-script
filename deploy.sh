@@ -76,7 +76,7 @@ function setup_app() {
     # Install required packages
     echo ======= Installing required packages ========
     pip3 install Flask
-    pip3 install gunicorn
+    pip3 install 'gunicorn==19.7.1' --force-reinstall
 
     requirements_file="$VM_PROJECT_PATH/requirements.txt"
     if [ -f "$requirements_file" ]; then
