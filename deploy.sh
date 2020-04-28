@@ -124,38 +124,7 @@ function setup_nginx() {
             }
     }
 EOL
-
-    echo "STARTIN NOW"
-    service_name="$PROJECT_LABEL.service"
-    service_file="/etc/systemd/system/$service_name"
-    
-    echo $service_name
-    echo "there you are"
-    sudo cat > $service_file <<EOF
-    [Unit]
-    Description=${PROJECT_LABEL} startup service
-    After=network.target
-    
-    [Service]
-    User=ubuntu
-    ExecStart=/bin/bash /home/ubuntu/launch.sh
-
-    [Install]
-    WantedBy=multi-user.target
-EOF
-
-    sudo chmod 664 /etc/systemd/system/$service_name
     sudo systemctl daemon-reload
-    sudo systemctl enable $PROJECT_LABEL
-    sudo systemctl start $PROJECT_LABEL
-    sudo service $PROJECT_LABEL status
-
-    # sudo mkdir /etc/systemd/system/nginx.service.d
-    # sudo touch override.conf
-    # sudo printf "[Service]\nExecStartPost=/bin/sleep 0.1\n" > override.conf
-    # sudo mv override.conf /etc/systemd/system/nginx.service.d/
-    # sudo systemctl daemon-reload
-
     # Ensure nginx server is running
     echo ====== Checking nginx server status ========
     sudo /etc/init.d/nginx restart
