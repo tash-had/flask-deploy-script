@@ -126,8 +126,9 @@ function setup_nginx() {
 EOL
 
     echo "STARTIN NOW"
-    service_name="${PROJECT_NAME}.service"
-
+    service_name="$PROJECT_NAME.service"
+    echo $service_name
+    echo "there you are"
     sudo bash -c 'cat > /etc/systemd/system/${service_name} <<EOF
     [Unit]
     Description=${PROJECT_NAME} startup service
