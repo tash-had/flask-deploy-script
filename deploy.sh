@@ -125,6 +125,31 @@ function setup_nginx() {
     }
 EOL
 
+    echo "STARTIN NOW"
+    sudo bash -c 'cat > /etc/systemd/system/${PROJECT_NAME}.service <<EOF
+    [Unit]
+    Description=${PROJECT_NAME} startup service
+    After=network.target
+    
+    [Service]
+    User=ubuntu
+    ExecStart=/bin/bash /home/ubuntu/launch.sh
+
+    [Install]
+    WantedBy=multi-user.target
+EOF'
+    sudo chmod 664 /etc/systemd/system/${PROJECT_NAME}.service
+    sudo systemctl daemon-reload
+    sudo systemctl enable ${PROJECT_NAME}.service
+    sudo systemctl start ${PROJECT_NAME}.service
+    sudo service ${PROJECT_NAME} status
+
+    # sudo mkdir /etc/systemd/system/nginx.service.d
+    # sudo touch override.conf
+    # sudo printf "[Service]\nExecStartPost=/bin/sleep 0.1\n" > override.conf
+    # sudo mv override.conf /etc/systemd/system/nginx.service.d/
+    # sudo systemctl daemon-reload
+
     # Ensure nginx server is running
     echo ====== Checking nginx server status ========
     sudo /etc/init.d/nginx restart
@@ -143,8 +168,11 @@ function create_launch_script () {
     cd $VM_PROJECT_PATH
     source $VM_PROJECT_PATH/.env
     source $VM_HOME_DIR/venv/bin/activate
-    sudo kill ${gunicorn_pid}
-    sudo $VM_HOME_DIR/venv/bin/gunicorn -b 0.0.0.0:${DEPLOYMENT_PORT} --env APP_CONFIG=${DEPLOYMENT_ENV} --daemon app:APP
+    if [ ! -z ${gunicorn_pid} ]; then
+        printf "\nKilling previous instances...\n"
+        sudo kill ${gunicorn_pid}
+    fi
+    sudo $VM_HOME_DIR/venv/bin/gunicorn -b 0.0.0.0:$DEPLOYMENT_PORT --env APP_CONFIG=${DEPLOYMENT_ENV} --daemon app:APP
     printf "\n\n***************************************************\n\t\tDeployment Succeeded.\n***************************************************\n\n"
 EOF
     sudo chmod 744 $VM_PROJECT_PATH/launch.sh
