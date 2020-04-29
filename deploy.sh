@@ -177,12 +177,13 @@ function create_launch_script () {
     echo ====== Starting new instance to run on port $DEPLOYMENT_PORT ========
     sudo $VM_HOME_DIR/venv/bin/gunicorn -b 0.0.0.0:$DEPLOYMENT_PORT --env APP_CONFIG=${DEPLOYMENT_ENV} --daemon ${module_name}:$PROJECT_APP_VARIABLE
 
-    if [ -z "\`ps ax | grep gunicorn | grep $DEPLOYMENT_PORT\`" ]; then
+    new_gunicorn=\`ps ax | grep gunicorn | grep $DEPLOYMENT_PORT\`
+
+    if [ -z "\$new_gunicorn" ]; then
         # Retrying deployment without --daemon flag to force error log to print to stdout
         sudo $VM_HOME_DIR/venv/bin/gunicorn -b 0.0.0.0:$DEPLOYMENT_PORT --env APP_CONFIG=${DEPLOYMENT_ENV} ${module_name}:$PROJECT_APP_VARIABLE
         printf "***************************************************\n\t\tDeployment Failed. \n***************************************************\n"
     else
-        echo $new_gunicorn
         printf "***************************************************\n\t\tDeployment Succeeded. \n***************************************************\n"
     fi
 EOF
