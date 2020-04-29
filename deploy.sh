@@ -287,7 +287,7 @@ done
 shift $(($OPTIND - 1))
 
 if [ $# -lt $EXPECTED_ARGS ]; then
-    printf "\n\nERROR: You must provide arguments for owner and repo_name"
+    printf "\n\nERROR: You must provide arguments for owner and repo_name\n\n"
     print_usage
 fi
 
