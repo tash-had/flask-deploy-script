@@ -213,7 +213,7 @@ function run_tests() {
 }
 
 function print_status() {
-    if [ $2 -ne 0 ]; then
+    if [ $1 -ne 0 ]; then
         printf "Exiting early because the previous step has failed.\n"
         printf "***************************************************\n\t\tDeployment Failed. \n***************************************************\n"
         exit 2
