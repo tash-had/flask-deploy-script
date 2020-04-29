@@ -252,6 +252,7 @@ function kill_deployment() {
     if [ $KILL_PORT == "all" ]; then
         sudo killall gunicorn
         echo ====== Killed PIDs of all running deployments. ========
+        KILL_PORT=""
     else
         gunicorn_pid=`ps ax | grep gunicorn | grep $KILL_PORT | awk '{split($0,a," "); print a[1]}' | head -n 1`
         if [ ! -z $gunicorn_pid ]; then
@@ -261,6 +262,8 @@ function kill_deployment() {
     fi
 
     sudo rm -rf $VM_HOME_DIR/$GIT_REPO_NAME*$KILL_PORT
+    sudo rm -rf $VM_NGINX_PATH/sites-enabled/$GIT_REPO_NAME*$KILL_PORT
+    sudo rm -rf $VM_NGINX_PATH/sites-available/$GIT_REPO_NAME*$KILL_PORT
     echo ====== Deleted project files of deployed PIDs $gunicorn_pid ========
 
     exit 0
