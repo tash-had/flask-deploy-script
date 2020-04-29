@@ -31,6 +31,6 @@ Example: `sudo bash deploy tash-had flask_demo demo_vm`
 
 `-s` **subdirectory:** the folder in your repo that has the server code. 
 
-`-e` **environment:** the deployment environmnt (ie. 'development'). This value is used to set the `APP_CONFIG` environment variable.
+`-e` **environment:** the deployment environment (ie. 'development'). This value is used to set the `APP_CONFIG` environment variable.
 
 `-p` **port:** the port to deploy on. defaults to 5000.
