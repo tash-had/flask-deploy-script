@@ -27,7 +27,7 @@ Example: `sudo bash deploy tash-had flask_demo demo_vm`
 
 `-m` **module name:** the name of the root Flask module file. Defaults to "app.py". 
 
-`-v` **variable name:** the WSGI callable variable that should be in your root flask module (see `-m`). For example, if in your root file (`app.py`), you have `a = Flask(__name__)`, then your variable name is `a`. Defaults to `app`.  
+`-v` **variable name:** the WSGI callable variable that should be in your root flask module (see `-m`). For example, if in your root file (`app.py`), if you have `a = Flask(__name__)`, then your variable name is `a`. Defaults to `app`.  
 
 `-s` **subdirectory:** the folder in your repo that has the server code. 
 
