@@ -4,14 +4,14 @@ This script will pull your server code from GitHub and deploy it on an Azure VM.
 ### [Full Article](https://medium.com/@tashadsaqif/deploying-a-flask-rest-api-to-azure-9c129b2bafee)
 
 ## Usage
-`usage: deploy [-b branch] [-c token] [-l label] [-t test_folder] [-m module_name] [-v variable_name] [-s subdirectory] [-e environment] [-p port] git_user repo_name vm_user`
+`usage: deploy [-b branch] [-c token] [-l label] [-t test_folder] [-m module_name] [-v variable_name] [-s subdirectory] [-e environment] [-p port] owner repo_name vm_user`
 
 Example: `sudo bash deploy tash-had flask_demo demo_vm`
 
 ### Required Arguments
-`git_user` a GitHub user or organization name
+`owner` the GitHub username or organization name of the repo owner.
 
-`repo_name` the repo to deploy. should be owned by `git_user`. **If the repo is private, the `-c` argument must be provided**. 
+`repo_name` the repo to deploy. should be owned by `owner`. **If the repo is private, the `-c` argument must be provided**. 
 
 `vm_user` the administrator username given to the VM
 
@@ -21,7 +21,7 @@ Example: `sudo bash deploy tash-had flask_demo demo_vm`
 
 `-c` **credential:** an access token with Read access to `repo_name`. This is only required if your repo is private.
 
-`-l` **label:** a label for this deployment. Defaults to "`repo_name`-`env`". This flag is useful if you want to have multiple instances of the same build environment on a single server (otherwise the default value would overwrite previous deployment). 
+`-l` **label:** a label for this deployment. Defaults to "`repo_name`-`env`" (ie. "my_app-development"). This flag is useful if you want to have multiple instances of the same build environment on a single server (otherwise the default value would overwrite previous deployment).
 
 `-t` **test folder:** the name of the test folder. Defaults to "tests".
 
@@ -31,6 +31,6 @@ Example: `sudo bash deploy tash-had flask_demo demo_vm`
 
 `-s` **subdirectory:** the folder in your repo that has the server code. 
 
-`-e` **environment:** the deployment environment (ie. 'development'). This value is used to set the `APP_CONFIG` environment variable.
+`-e` **environment:** the deployment environment (ie. 'development'). This value is used to set the `APP_CONFIG` environment variable. Defaults to "development".
 
-`-p` **port:** the port to deploy on. defaults to 5000.
+`-p` **port:** the port to deploy on. Defaults to "5000".
