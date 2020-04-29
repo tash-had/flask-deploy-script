@@ -224,7 +224,7 @@ function check_last_step() {
 }
 
 function print_usage() {
-  printf "usage: deploy usage: deploy [-b branch] [-c token] [-t test_folder] [-m module_name] [-v variable_name] [-s subdirectory] [-e environment] [-p port] [-k kill_port|*] owner repo_name"
+  printf "usage: deploy usage: deploy [-b branch] [-c token] [-t test_folder] [-m module_name] [-v variable_name] [-s subdirectory] [-e environment] [-p port] [-k kill_port|all] owner repo_name"
   exit 1
 }
 
@@ -248,17 +248,19 @@ function set_dependent_config() {
 function kill_deployment() {
     printf "***************************************************\n\t\tKilling deployment(s)\n***************************************************\n"
     
-    # If $KILL_PORT is set to "*"", set it to empty string so grep selects all deployments on any port. 
-    if [ $KILL_PORT == "*" ]; then
-        KILL_PORT=""
+    # If $KILL_PORT is set to "all"", use killall. 
+    if [ $KILL_PORT == "all" ]; then
+        sudo killall gunicorn
+    else
+        gunicorn_pid=`ps ax | grep gunicorn | grep $KILL_PORT | awk '{split($0,a," "); print a[1]}' | head -n 1`
+        if [ ! -z $gunicorn_pid ]; then
+            sudo kill $gunicorn_pid
+            echo ====== Killed PIDs: $gunicorn_pid ========
+        fi
     fi
 
-    gunicorn_pid=`ps ax | grep gunicorn | grep $KILL_PORT | awk '{split($0,a," "); print a[1]}' | head -n 1`
     
-    if [ ! -z $gunicorn_pid ]; then
-        sudo kill $gunicorn_pid
-        echo ====== Killed PIDs: $gunicorn_pid ========
-    fi
+
 
     sudo rm -rf $VM_HOME_DIR/$GIT_REPO_NAME*$KILL_PORT
     echo ====== Deleted project files of deployed PIDs: $gunicorn_pid ========
