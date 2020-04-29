@@ -180,7 +180,7 @@ function create_launch_script () {
         echo ====== Found no previously deployed instances on port $DEPLOYMENT_PORT ========
     fi
 
-    echo ====== Starting new instance to run on port $DEPLOYMENT_PORT ========
+    echo ====== Deploying build $DEPLOYMENT_ENV of $GIT_REPO_NAME on port $DEPLOYMENT_PORT ========
     sudo $VM_HOME_DIR/venv/bin/gunicorn -b 0.0.0.0:$DEPLOYMENT_PORT --env APP_CONFIG=${DEPLOYMENT_ENV} --daemon ${module_name}:$PROJECT_APP_VARIABLE
     printf "\n\n\n\n"
     echo ====== PROBLEMS? RUN \"$VM_HOME_DIR/venv/bin/gunicorn -b 0.0.0.0:$DEPLOYMENT_PORT ${module_path}:$PROJECT_APP_VARIABLE\" FOR MORE LOGS ========
