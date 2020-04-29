@@ -2,16 +2,14 @@
 This script will pull your server code from GitHub and deploy it on an Azure VM.
 
 ## Usage
-`usage: deploy usage: deploy [-b branch] [-c token] [-l label] [-t test_folder] [-m module_name] [-v variable_name] [-s subdirectory] [-e environment] [-p port] git_user repo_name vm_user`
+`usage: deploy usage: deploy [-b branch] [-c token] [-l label] [-t test_folder] [-m module_name] [-v variable_name] [-s subdirectory] [-e environment] [-p port] git_user repo_name`
 
-Example: `sudo bash deploy tash-had flask_demo demo_vm`
+Example: `sudo bash deploy tash-had flask_demo`
 
 ### Required Arguments
 `git_user` a GitHub user or organization name
 
 `repo_name` the repo to deploy. should be owned by `git_user`. **If the repo is private, the `-c` argument must be provided**. 
-
-`vm_user` the administrator username given to the VM
 
 ### Optional Arguments
 

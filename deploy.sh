@@ -3,7 +3,7 @@
 # Usage instructions at https://github.com/tash-had/azure-flask-deploy-script
 
 # git config
-GIT_USERNAME=""
+GIT_REPO_OWNER=""
 GIT_REPO_NAME=""
 GIT_BRANCH="master"
 GIT_ACCESS_TOKEN=":"
@@ -50,51 +50,59 @@ function init_venv() {
     pip3 install virtualenv
 
     # Create virtual environment and activate it
-    echo ======== Creating and activating virtual env =======
+    echo ======== Creating virtual env =======
     virtualenv -p $VM_PY_PATH $VM_HOME_DIR/venv
+
+    echo ======== Activating virtual env =======
     source $VM_HOME_DIR/venv/bin/activate
 }
 
 function clone_app_repository() {
     printf "***************************************************\n\t\tFetching Code \n***************************************************\n"
     # Clone and access project directory
-    echo ======== Cloning and accessing project directory ========
     if [[ -d $VM_PROJECT_PATH ]]; then
+        echo ======== Removing existing project files at $VM_PROJECT_PATH ========
         sudo rm -rf $VM_PROJECT_PATH
     fi
     
     cd $VM_HOME_DIR
-
+    
     if [ $PROJECT_PARENT_FOLDER == "." ]; then
+        echo ======== Cloning repo ========
         git clone -b $GIT_BRANCH $GIT_CLONE_URL $PROJECT_LABEL && cd $PROJECT_LABEL
     else
+        echo ======== Cloning repo and keeping only files "in" $PROJECT_PARENT_FOLDER ========
         git clone -b $GIT_BRANCH $GIT_CLONE_URL $PROJECT_LABEL && cd $PROJECT_LABEL && git filter-branch --subdirectory-filter $PROJECT_PARENT_FOLDER
     fi
 }
 
-function setup_app() {
-    printf "***************************************************\n    Installing App dependencies \n***************************************************\n"
-    # Install required packages
-    echo ======= Installing required packages ========
-    pip3 install Flask
-    pip3 install 'gunicorn==19.7.1'
+function setup_dependencies() {
+    printf "***************************************************\n\t\tInstalling dependencies \n***************************************************\n"
 
     requirements_file="$VM_PROJECT_PATH/requirements.txt"
+
     if [ -f "$requirements_file" ]; then
+        echo ======= requirements.txt found ========
+        echo ======= Installing required packages ========
         pip3 install -r $requirements_file
     else
-        printf "\nrequirements.txt not found.\n"
+        echo ======= No requirements.txt found ========
+        echo ======= Installing Flask and gunicorn with pip3 ========
+        pip3 install Flask
+        pip3 install gunicorn
     fi
 }
 
 # Create and Export required environment variable
 function setup_env() {
-    echo ======= Exporting the necessary environment variables ========
+    printf "***************************************************\n\t\tSetting up environment \n***************************************************\n"
+    
+    echo ======= Writing environment variables to "$VM_PROJECT_PATH/.env" ========
     sudo cat > $VM_PROJECT_PATH/.env << EOF
     export APP_CONFIG=${DEPLOYMENT_ENV}
     export FLASK_APP=${PROJECT_APP_MODULE_FILE}
 EOF
-    echo ======= Exporting the necessary environment variables ========
+    echo ======= Exporting the environment variables from "$VM_PROJECT_PATH/.env" ========
     source $VM_PROJECT_PATH/.env
 }
 
@@ -105,17 +113,20 @@ function setup_nginx() {
     sudo apt-get install -y nginx
 
     # Configure nginx routing
-    echo ======= Configuring nginx =======
     echo ======= Removing default config =======
     sudo rm -rf $VM_NGINX_PATH/sites-available/default
     sudo rm -rf $VM_NGINX_PATH/sites-enabled/default
+
+    echo ======= Removing previous config =======
     sudo rm -rf $VM_NGINX_PATH/sites-enabled/$PROJECT_LABEL
+
+    echo ======= Creating new config file =======
     sudo touch $VM_NGINX_PATH/sites-available/$PROJECT_LABEL
 
-    echo ======= Create a symbolic link of the file to sites-enabled =======
+    echo ======= Create a symbolic link of the config file to sites-enabled =======
     sudo ln -s $VM_NGINX_PATH/sites-available/$PROJECT_LABEL $VM_NGINX_PATH/sites-enabled/$PROJECT_LABEL
 
-    echo ======= Replace config file =======
+    echo ======= Writing nginx configurations to config file =======
     sudo cat >$VM_NGINX_PATH/sites-enabled/$PROJECT_LABEL <<EOL
    server {
             location / {
@@ -126,8 +137,10 @@ function setup_nginx() {
     }
 EOL
     # Ensure nginx server is running
-    echo ====== Checking nginx server status ========
+    echo ====== Restarting nginx ========
     sudo /etc/init.d/nginx restart
+
+    echo ====== Checking nginx status ========
     sudo /etc/init.d/nginx status
 }
 
@@ -135,26 +148,46 @@ EOL
 function create_launch_script () {
     printf "***************************************************\n\t\tCreating a Launch script \n***************************************************\n"
     
+    echo ====== Fetching all processes deployed on port $DEPLOYMENT_PORT ========
     gunicorn_pid=`ps ax | grep gunicorn | grep $DEPLOYMENT_PORT | awk '{split($0,a," "); print a[1]}' | head -n 1`
-    
+
+    echo ====== Getting module name ========
     module_name=${PROJECT_APP_MODULE_FILE%.*} 
     module_name=${module_name##*/}
 
+    echo ====== Writing launch script ========
     sudo cat > $VM_PROJECT_PATH/launch.sh <<EOF
     #!/bin/bash
-    printf "\nStarting Launch Script...\n"
+    echo ====== Starting launch script ========
     cd $VM_PROJECT_PATH
+
+    echo ====== Processing environment variables ========
     source $VM_PROJECT_PATH/.env
+
+    echo ====== Activating virtual environment ========
     source $VM_HOME_DIR/venv/bin/activate
+
     if [ ! -z ${gunicorn_pid} ]; then
-        printf "\nKilling previous instances...\n"
+        echo ====== Killing previously deployed instances on port $DEPLOYMENT_PORT ========
         sudo kill $gunicorn_pid
+    else
+        echo ====== Found no previously deployed instances on port $DEPLOYMENT_PORT ========
     fi
+
+    echo ====== Starting new instance to run on port $DEPLOYMENT_PORT ========
     sudo $VM_HOME_DIR/venv/bin/gunicorn -b 0.0.0.0:$DEPLOYMENT_PORT --env APP_CONFIG=${DEPLOYMENT_ENV} --daemon ${module_name}:$PROJECT_APP_VARIABLE
-    printf "\n\n***************************************************\n\t\tDeployment Succeeded.\n***************************************************\n\n"
+    
+    if [ $? -ne 0 ]; then
+        printf "***************************************************\n\t\tDeployment Failed. \n***************************************************\n"
+    else
+        printf "***************************************************\n\t\tDeployment Succeeded. \n***************************************************\n"
+    fi
 EOF
+
+    echo ====== Giving user rights to execute launch script ========
     sudo chmod 744 $VM_PROJECT_PATH/launch.sh
-    echo ====== Ensuring script is executable =======
+    
+    echo ====== Listing all file metadata about launch script =======
     ls -la $VM_PROJECT_PATH/launch.sh
 }
 
@@ -165,42 +198,50 @@ function launch_app() {
 
 # Run tests
 function run_tests() {
+    printf "***************************************************\n\t\tRunning tests \n***************************************************\n"
+
     test_folder="$VM_PROJECT_PATH/$PROJECT_TEST_FOLDER"
     if [[ -d $test_folder ]]; then
+        echo ====== Installing nose ========
         pip install nose
         cd $test_folder
+        echo ====== Starting unit tests ========
         nosetests test*
+    else
+        echo ====== No "test" folder found ========
     fi   
 }
 
 function print_status() {
-    case $2 in
-        0) printf "$1...SUCCESS\n" ;;
-        *) printf "$1...FAILED\n"  ;;
-    esac
-    if [ $2 -ne 0 ]
-        then
-          printf "Exiting early because '$1' has failed.\n"
-          printf "***************************************************\n\t\tDeployment failed.\n***************************************************\n"
-          exit 2
+    if [ $2 -ne 0 ]; then
+        printf "Exiting early because the previous step has failed.\n"
+        printf "***************************************************\n\t\tDeployment Failed. \n***************************************************\n"
+        exit 2
     fi
 }
 
 function print_usage() {
-  printf "usage: deploy usage: deploy [-b branch] [-c token] [-l label] [-t test_folder] [-m module_name] [-v variable_name] [-s subdirectory] [-e environment] [-p port] git_user repo_name vm_user"
+  printf "usage: deploy usage: deploy [-b branch] [-c token] [-l label] [-t test_folder] [-m module_name] [-v variable_name] [-s subdirectory] [-e environment] [-p port] owner repo_name"
 }
 
 function set_dependent_config() {
+    printf "***************************************************\n\t\tConfiguring script variables\n***************************************************\n"
+    
     # set values of variables that depend on the arguments given to the script
-    GIT_USERNAME=$1
+    
+    echo ====== Configuring git variables ========
+    GIT_REPO_OWNER=$1
     GIT_REPO_NAME=$2
-    GIT_CLONE_URL="https://$GIT_USERNAME:$GIT_ACCESS_TOKEN@github.com/$GIT_USERNAME/$GIT_REPO_NAME.git"
-
+    GIT_CLONE_URL="https://$GIT_REPO_OWNER:$GIT_ACCESS_TOKEN@github.com/$GIT_REPO_OWNER/$GIT_REPO_NAME.git"
+    
     PROJECT_LABEL="$GIT_REPO_NAME-$DEPLOYMENT_ENV"
-
-    VM_USERNAME=$3
+    echo ====== Set PROJECT_LABEL as $PROJECT_LABEL ========
+    
+    VM_USERNAME=`whoami`
     VM_HOME_DIR="/home/$VM_USERNAME"
+
     VM_PROJECT_PATH="$VM_HOME_DIR/$PROJECT_LABEL"
+    echo ====== Set project path as $VM_PROJECT_PATH ========
 }
 
 # Runtime
@@ -226,27 +267,27 @@ shift $(($OPTIND - 1))
 set_dependent_config $*
 
 setup_host
-print_status "Update packages and install python" $?
+print_status $?
 
 init_venv
-print_status "Install and create a Python 3.6 virtual environment" $?
+print_status $?
 
 clone_app_repository
-print_status "Remove old code and clone server code from repo" $?
+print_status $?
 
 setup_env
-print_status "Set environment variables" $?
+print_status $?
 
-setup_app
-print_status "Install pip dependencies" $?
+setup_dependencies
+print_status $?
 
 run_tests
-print_status "Run unit tests" $?
+print_status $?
 
 setup_nginx
-print_status "Write nginx config files and restart server" $?
+print_status $?
 
 create_launch_script
-print_status "Writing launch script" $?
+print_status $?
 
 launch_app
