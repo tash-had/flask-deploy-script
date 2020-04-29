@@ -237,7 +237,7 @@ function set_dependent_config() {
     PROJECT_LABEL="$GIT_REPO_NAME-$DEPLOYMENT_ENV"
     echo ====== Set PROJECT_LABEL as $PROJECT_LABEL ========
     
-    VM_USERNAME=$3
+    VM_USERNAME=`whoami`
     VM_HOME_DIR="/home/$VM_USERNAME"
 
     VM_PROJECT_PATH="$VM_HOME_DIR/$PROJECT_LABEL"
