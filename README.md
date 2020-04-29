@@ -6,7 +6,12 @@ This script will pull your server code from GitHub and deploy it on an Azure VM.
 ## Usage
 `usage: deploy usage: deploy [-b branch] [-c token] [-l label] [-t test_folder] [-m module_name] [-v variable_name] [-s subdirectory] [-e environment] [-p port] git_user repo_name`
 
-Example: `sudo bash deploy.sh tash-had my-app`
+Examples: 
+- `sudo bash deploy.sh tash-had my-app`
+- `sudo bash deploy.sh -s server tash-had my-app` (deploy the code in the subdirectory "server" within the repo)
+- `sudo bash deploy.sh -p 8000 tash-had my-app` (deploy to port 8000)
+- `sudo bash deploy.sh -b prod tash-had my-app` (deploy branch "prod")
+- `sudo bash deploy.sh -c GITHUB_ACCESS_TOKEN tash-had my-app` (deploy code from private repo "my-app")
 
 ### Required Arguments
 `owner` the GitHub username or organization name of the repo owner.
