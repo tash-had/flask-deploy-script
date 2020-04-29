@@ -43,7 +43,7 @@ function setup_host() {
     sudo apt-get install -y python3-pip
 }
 
-function init_venv() {
+function setup_venv() {
     printf "***************************************************\n\t\tSetting up Venv \n***************************************************\n"
     # Install virtualenv
     echo ======= Installing virtualenv =======
@@ -212,7 +212,7 @@ function run_tests() {
     fi   
 }
 
-function print_status() {
+function check_last_step() {
     if [ $1 -ne 0 ]; then
         printf "Exiting early because the previous step has failed.\n"
         printf "***************************************************\n\t\tDeployment Failed. \n***************************************************\n"
@@ -244,7 +244,7 @@ function set_dependent_config() {
     echo ====== Set project path as $VM_PROJECT_PATH ========
 }
 
-# Runtime
+# RUNTIME
 
 # Process flags
 while getopts 'b:c:l:t:r:m:v:s:e:p:' flag; do
@@ -267,27 +267,27 @@ shift $(($OPTIND - 1))
 set_dependent_config $*
 
 setup_host
-print_status $?
+check_last_step $?
 
-init_venv
-print_status $?
+setup_venv
+check_last_step $?
 
 clone_app_repository
-print_status $?
+check_last_step $?
 
 setup_env
-print_status $?
+check_last_step $?
 
 setup_dependencies
-print_status $?
+check_last_step $?
 
 run_tests
-print_status $?
+check_last_step $?
 
 setup_nginx
-print_status $?
+check_last_step $?
 
 create_launch_script
-print_status $?
+check_last_step $?
 
 launch_app
