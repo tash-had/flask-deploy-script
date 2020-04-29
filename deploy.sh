@@ -32,8 +32,8 @@ KILL_PORT=""
 
 EXPECTED_ARGS=2
 
-function setup_host() {
-    printf "***************************************************\n\t\tSetup Host \n***************************************************\n"
+function setup_vm() {
+    printf "***************************************************\n\t\tSetup VM \n***************************************************\n"
     # Update packages
     echo ======= Updating packages ========
     sudo apt-get update
@@ -303,7 +303,7 @@ if [ ! -z "$KILL_FLAG" ]; then
     kill_deployment
 fi
 
-setup_host
+setup_vm
 check_last_step $?
 
 setup_venv
