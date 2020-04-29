@@ -17,8 +17,8 @@ PROJECT_APP_VARIABLE="app"
 PROJECT_PARENT_FOLDER="."
 
 # vm config
-VM_USERNAME=""
-VM_HOME_DIR=""
+VM_USERNAME=`whoami`
+VM_HOME_DIR="/home/$VM_USERNAME"
 VM_PROJECT_PATH=""
 VM_NGINX_PATH='/etc/nginx'
 VM_PY_PATH="/usr/bin/python3.6"
@@ -26,6 +26,9 @@ VM_PY_PATH="/usr/bin/python3.6"
 # deployment config
 DEPLOYMENT_ENV="development"
 DEPLOYMENT_PORT="5000"
+
+KILL_FLAG=""
+KILL_PORT=""
 
 function setup_host() {
     printf "***************************************************\n\t\tSetup Host \n***************************************************\n"
@@ -219,7 +222,7 @@ function check_last_step() {
 }
 
 function print_usage() {
-  printf "usage: deploy usage: deploy [-b branch] [-c token] [-l label] [-t test_folder] [-m module_name] [-v variable_name] [-s subdirectory] [-e environment] [-p port] owner repo_name"
+  printf "usage: deploy usage: deploy [-b branch] [-c token] [-t test_folder] [-m module_name] [-v variable_name] [-s subdirectory] [-e environment] [-p port] owner repo_name"
 }
 
 function set_dependent_config() {
@@ -232,30 +235,46 @@ function set_dependent_config() {
     GIT_REPO_NAME=$2
     GIT_CLONE_URL="https://$GIT_REPO_OWNER:$GIT_ACCESS_TOKEN@github.com/$GIT_REPO_OWNER/$GIT_REPO_NAME.git"
     
-    PROJECT_LABEL="$GIT_REPO_NAME-$DEPLOYMENT_ENV"
+    PROJECT_LABEL="$GIT_REPO_NAME-$DEPLOYMENT_ENV-$DEPLOYMENT_PORT"
     echo ====== Set PROJECT_LABEL as $PROJECT_LABEL ========
-    
-    VM_USERNAME=`whoami`
-    VM_HOME_DIR="/home/$VM_USERNAME"
 
     VM_PROJECT_PATH="$VM_HOME_DIR/$PROJECT_LABEL"
     echo ====== Set project path as $VM_PROJECT_PATH ========
 }
 
+function kill_deployment() {
+    printf "***************************************************\n\t\tKilling deployment(s)\n***************************************************\n"
+    
+    # If $KILL_PORT is an empty string, grep will select all running deployments on any port. 
+
+    gunicorn_pid=`ps ax | grep gunicorn | grep $KILL_PORT | awk '{split($0,a," "); print a[1]}' | head -n 1`
+    
+    if [ ! -z $gunicorn_pid ]; then
+        sudo kill $gunicorn_pid
+        echo ====== Killed PIDs: $gunicorn_pid ========
+    fi
+
+    sudo rm -rf $VM_HOME_DIR/$GIT_REPO_NAME*$KILL_PORT
+    echo ====== Deleted project files of PIDs $gunicorn_pid ========
+
+    exit 0
+}
+
 # RUNTIME
 
 # Process flags
-while getopts 'b:c:l:t:r:m:v:s:e:p:' flag; do
+while getopts 'b:c:t:m:v:s:e:p:k::' flag; do
   case "${flag}" in
     b) GIT_BRANCH="${OPTARG}" ;;
     c) GIT_ACCESS_TOKEN="${OPTARG}" ;;
-    l) PROJECT_LABEL="${OPTARG}" ;;
     t) PROJECT_TEST_FOLDER="${OPTARG}" ;;
     m) PROJECT_APP_MODULE_FILE="${OPTARG}" ;;
     v) PROJECT_APP_VARIABLE="${OPTARG}" ;;
     s) PROJECT_PARENT_FOLDER="${OPTARG}" ;;
     e) DEPLOYMENT_ENV="${OPTARG}" ;;
     p) DEPLOYMENT_PORT="${OPTARG}" ;;
+    k) KILL_FLAG="true"
+       KILL_PORT="${OPTARG}" ;;
     *) print_usage
        exit 1 ;;
   esac
@@ -263,6 +282,10 @@ done
 shift $(($OPTIND - 1))
 
 set_dependent_config $*
+
+if [ ! -z "$KILL_FLAG" ]; then
+    kill_deployment
+fi
 
 setup_host
 check_last_step $?
