@@ -30,6 +30,8 @@ DEPLOYMENT_PORT="5000"
 KILL_FLAG=""
 KILL_PORT=""
 
+EXPECTED_ARGS=2
+
 function setup_host() {
     printf "***************************************************\n\t\tSetup Host \n***************************************************\n"
     # Update packages
@@ -245,7 +247,10 @@ function set_dependent_config() {
 function kill_deployment() {
     printf "***************************************************\n\t\tKilling deployment(s)\n***************************************************\n"
     
-    # If $KILL_PORT is an empty string, grep will select all running deployments on any port. 
+    # If $KILL_PORT is set to "*"", set it to empty string so grep selects all deployments on any port. 
+    if [ $KILL_PORT == "*" ]; then
+        KILL_PORT=""
+    fi
 
     gunicorn_pid=`ps ax | grep gunicorn | grep $KILL_PORT | awk '{split($0,a," "); print a[1]}' | head -n 1`
     
@@ -255,7 +260,7 @@ function kill_deployment() {
     fi
 
     sudo rm -rf $VM_HOME_DIR/$GIT_REPO_NAME*$KILL_PORT
-    echo ====== Deleted project files of PIDs $gunicorn_pid ========
+    echo ====== Deleted project files of deployed PIDs: $gunicorn_pid ========
 
     exit 0
 }
@@ -263,7 +268,7 @@ function kill_deployment() {
 # RUNTIME
 
 # Process flags
-while getopts 'b:c:t:m:v:s:e:p:k::' flag; do
+while getopts 'b:c:t:m:v:s:e:p:k:' flag; do
   case "${flag}" in
     b) GIT_BRANCH="${OPTARG}" ;;
     c) GIT_ACCESS_TOKEN="${OPTARG}" ;;
@@ -280,6 +285,11 @@ while getopts 'b:c:t:m:v:s:e:p:k::' flag; do
   esac
 done
 shift $(($OPTIND - 1))
+
+if [ $# -lt $EXPECTED_ARGS ]; then
+    printf "\n\nERROR: You must provide arguments for owner and repo_name"
+    print_usage
+fi
 
 set_dependent_config $*
 
