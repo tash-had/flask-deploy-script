@@ -177,8 +177,8 @@ function create_launch_script () {
     echo ====== Starting new instance to run on port $DEPLOYMENT_PORT ========
     sudo $VM_HOME_DIR/venv/bin/gunicorn -b 0.0.0.0:$DEPLOYMENT_PORT --env APP_CONFIG=${DEPLOYMENT_ENV} --daemon ${module_name}:$PROJECT_APP_VARIABLE
     printf "\n\n"
-    echo ====== PROBLEMS? RUN $VM_HOME_DIR/venv/bin/gunicorn -b 0.0.0.0:$DEPLOYMENT_PORT ${module_name}:$PROJECT_APP_VARIABLE FOR LOGS ========
-    printf "***************************************************\n\t\tDeployment ProcessCompleted. \n***************************************************\n"
+    echo ====== PROBLEMS? RUN "$VM_HOME_DIR/venv/bin/gunicorn -b 0.0.0.0:$DEPLOYMENT_PORT ${module_name}:$PROJECT_APP_VARIABLE" FOR MORE LOGS ========
+    printf "***************************************************\n\t\tDeployment Completed. \n***************************************************\n"
 EOF
 
     echo ====== Giving user rights to execute launch script ========
