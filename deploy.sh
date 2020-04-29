@@ -185,6 +185,7 @@ function create_launch_script () {
         printf "***************************************************\n\t\tDeployment Failed. \n***************************************************\n"
     else
         echo "since we succeeded the new_gunicorn is"
+        echo $new_gunicorn
         printf "***************************************************\n\t\tDeployment Succeeded. \n***************************************************\n"
     fi
 EOF
