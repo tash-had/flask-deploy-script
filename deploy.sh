@@ -251,6 +251,7 @@ function kill_deployment() {
     # If $KILL_PORT is set to "all"", use killall. 
     if [ $KILL_PORT == "all" ]; then
         sudo killall gunicorn
+        echo ====== Killed PIDs of all running deployments. ========
     else
         gunicorn_pid=`ps ax | grep gunicorn | grep $KILL_PORT | awk '{split($0,a," "); print a[1]}' | head -n 1`
         if [ ! -z $gunicorn_pid ]; then
@@ -259,11 +260,8 @@ function kill_deployment() {
         fi
     fi
 
-    
-
-
     sudo rm -rf $VM_HOME_DIR/$GIT_REPO_NAME*$KILL_PORT
-    echo ====== Deleted project files of deployed PIDs: $gunicorn_pid ========
+    echo ====== Deleted project files of deployed PIDs $gunicorn_pid ========
 
     exit 0
 }
@@ -288,13 +286,16 @@ while getopts 'b:c:t:m:v:s:e:p:k:' flag; do
 done
 shift $(($OPTIND - 1))
 
+# Check that there is a correct number of arguments 
 if [ $# -lt $EXPECTED_ARGS ]; then
     printf "\n\nERROR: You must provide arguments for owner and repo_name\n\n"
     print_usage
 fi
 
+# Set variables using given arguments
 set_dependent_config $*
 
+# If -k flag is provided, kill the deployments on KILL_PORT
 if [ ! -z "$KILL_FLAG" ]; then
     kill_deployment
 fi
