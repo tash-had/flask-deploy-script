@@ -225,6 +225,7 @@ function check_last_step() {
 
 function print_usage() {
   printf "usage: deploy usage: deploy [-b branch] [-c token] [-t test_folder] [-m module_name] [-v variable_name] [-s subdirectory] [-e environment] [-p port] owner repo_name"
+  exit 1
 }
 
 function set_dependent_config() {
@@ -280,8 +281,7 @@ while getopts 'b:c:t:m:v:s:e:p:k:' flag; do
     p) DEPLOYMENT_PORT="${OPTARG}" ;;
     k) KILL_FLAG="true"
        KILL_PORT="${OPTARG}" ;;
-    *) print_usage
-       exit 1 ;;
+    *) print_usage ;;
   esac
 done
 shift $(($OPTIND - 1))
