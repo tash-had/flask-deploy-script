@@ -154,6 +154,7 @@ function create_launch_script () {
     echo ====== Getting module name ========
     module_name=${PROJECT_APP_MODULE_FILE%.*} 
     module_name=${module_name##*/}
+    module_path="$VM_PROJECT_PATH/$module_name"
 
     echo ====== Writing launch script ========
     sudo cat > $VM_PROJECT_PATH/launch.sh <<EOF
@@ -177,7 +178,7 @@ function create_launch_script () {
     echo ====== Starting new instance to run on port $DEPLOYMENT_PORT ========
     sudo $VM_HOME_DIR/venv/bin/gunicorn -b 0.0.0.0:$DEPLOYMENT_PORT --env APP_CONFIG=${DEPLOYMENT_ENV} --daemon ${module_name}:$PROJECT_APP_VARIABLE
     printf "\n\n\n\n"
-    echo ====== PROBLEMS? RUN \"$VM_HOME_DIR/venv/bin/gunicorn -b 0.0.0.0:$DEPLOYMENT_PORT ${module_name}:$PROJECT_APP_VARIABLE\" FOR MORE LOGS ========
+    echo ====== PROBLEMS? RUN \"$VM_HOME_DIR/venv/bin/gunicorn -b 0.0.0.0:$DEPLOYMENT_PORT ${module_path}:$PROJECT_APP_VARIABLE\" FOR MORE LOGS ========
     printf "***************************************************\n\t\tDeployment Completed. \n***************************************************\n"
 EOF
 
