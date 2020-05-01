@@ -15,7 +15,7 @@ Selected Examples:
 - `sudo bash deploy.sh -c GITHUB_ACCESS_TOKEN tash-had my-app` (deploy code from private repo "my-app")
 
 ### Required Arguments
-`owner` the GitHub username or organization name of the repo owner.
+`owner` a GitHub username or organization name.
 
 `repo_name` the repo to deploy. should be owned by `owner`. **If the repo is private, the `-c` argument must be provided**. 
 
