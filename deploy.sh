@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# Usage instructions at https://github.com/tash-had/azure-flask-deploy-script
+# More usage instructions at https://github.com/tash-had/flask-deploy-script
 
 # git config
 GIT_REPO_OWNER=""
