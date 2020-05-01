@@ -1,5 +1,5 @@
 # flask-deploy-script
-This script will pull your server code from GitHub and deploy it on an Azure VM.
+This script will pull your server code from GitHub and deploy it on any Ubuntu VM.
 
 ### [Full Article](https://medium.com/@tashadsaqif/deploying-a-flask-rest-api-to-azure-9c129b2bafee)
 
