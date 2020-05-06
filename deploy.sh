@@ -224,7 +224,7 @@ function check_last_step() {
 }
 
 function print_usage() {
-  printf "usage: deploy [-b branch] [-c token] [-t test_folder] [-m module_name] [-v variable_name] [-s subdirectory] [-e environment] [-p port] [-k kill_port|all] owner repo_name"
+  printf "usage: deploy [-b branch] [-c access_token] [-t test_folder] [-m module_name] [-v variable_name] [-s subdirectory] [-e deploy_env] [-p deploy_port] [-k kill_port|all] owner repo_name"
   exit 1
 }
 
