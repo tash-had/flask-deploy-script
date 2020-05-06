@@ -4,7 +4,7 @@ This script will pull your server code from a GitHub repo and deploy it on any U
 ### [Full Article](https://medium.com/@tashadsaqif/deploying-a-flask-rest-api-to-azure-9c129b2bafee)
 
 ## Usage
-`usage: deploy [-b branch] [-c token] [-t folder] [-m module] [-v variable] [-s subdirectory] [-e environment] [-p port] [-k port|all] owner repo_name`
+`usage: deploy [-b branch] [-c access_token] [-t test_folder] [-m module_name] [-v variable_name] [-s subdirectory] [-e deploy_env] [-p deploy_port] [-k kill_port|all] owner repo_name`
 
 Selected Examples: 
 - `sudo bash deploy.sh tash-had my-app`
